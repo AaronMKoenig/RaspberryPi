@@ -1,14 +1,22 @@
 import socket
 import time
 
-HOST = '192.168.2.190'  # IP-Adresse des Servers (Kali Laptop)
-PORT = 12345       #  Port 
+HOST = '192.168.2.190'  # Server-IP
+PORT = 12345
+
+block_size = 10 * 1024 * 1024  # 10 MB
+total_size = 1 * 1024 * 1024 * 1024  # 1 GB
+blocks = total_size // block_size
 
 with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as s:
-    s.connect((HOST, PORT))  # Verbindung zum Server aufbauen
+    s.connect((HOST, PORT))
     print("Verbunden zum Server")
-    for i in range(100):
-        msg = b'X' * 1024 * 1024  # 1 MB Daten in Bytes
-        s.sendall(msg)             # Sende die Daten komplett an den Server
-        print(f"Gesendet: {len(msg)} Bytes")
-        time.sleep(0.01)            # Kurze Pause zwischen den Sendungen 
+    msg = b'X' * block_size
+    start = time.time()
+    for i in range(blocks):
+        s.sendall(msg)
+        print(f"Block {i+1}/{blocks} gesendet")
+    end = time.time()
+    duration = end - start
+    print(f"Gesamtzeit: {duration:.2f} Sekunden")
+    print(f"Durchsatz: {total_size * 8 / duration / 1_000_000:.2f} Mbit/s")
